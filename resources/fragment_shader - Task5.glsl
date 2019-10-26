@@ -50,10 +50,10 @@ vec3 getRayDir() {
 // Helper functions
 vec3 translate(vec3 p, vec3 t){
   mat4 T = mat4(
-  vec4(1, 0, 0, t.x),
-  vec4(0, 1, 0, t.y),
-  vec4(0, 0, 1, t.z),
-  vec4(0, 0, 0, 1));
+    vec4(1, 0, 0, t.x),
+    vec4(0, 1, 0, t.y),
+    vec4(0, 0, 1, t.z),
+    vec4(0, 0, 0, 1));
   return (vec4(p, 1) * inverse(T)).xyz;
 }
 
@@ -68,10 +68,10 @@ vec3 rotateY(vec3 p, float t){
 
 vec3 rotateX(vec3 p, float t){
   mat4 R = mat4(
-  vec4(1, 0, 0, 0),
-  vec4(0, cos(t), -sin(t), 0),
-  vec4(0, sin(t), cos(t), 0),
-  vec4(0, 0, 0, 1));
+    vec4(1, 0, 0, 0),
+    vec4(0, cos(t), -sin(t), 0),
+    vec4(0, sin(t), cos(t), 0),
+    vec4(0, 0, 0, 1));
   return (vec4(p, 1) * inverse(R)).xyz;
 }
 
@@ -110,8 +110,8 @@ float sphere(vec3 pt) {
   return length(pt) - 1;
 }
 
-float cube(vec3 p, float r) {
-  vec3 d = abs(p) - vec3(r);
+float cube(vec3 p) {
+  vec3 d = abs(p) - vec3(1);
   return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.));
 }
 
@@ -127,60 +127,24 @@ float torus(vec3 p, vec2 t) {
   return length(q) - t.y;
 }
 
-float cylinder(vec3 p, vec3 dim){
-  return length(p.xz - dim.xy) - dim.z;
-}
-
-float twistedBox (vec3 p, vec2 dim){
-  float t = p.y * PI;
-  return (cube(vec3(
-      p.x * cos(t) + p.z * sin(t),
-      p.y,
-      -p.x * sin(t) + p.z * cos(t)), 1) - dim.x)
-    / (2*sqrt(2)*dim.y);
-}
-
-float repeatedTowers(vec3 p, vec3 dim, vec2 shift){
-  if (abs(p.x) < 10-shift.x && abs(p.y) < 10-shift.x && abs(p.z) < 10-shift.x){
-    vec3 pos;
-    pos = vec3(mod(p.x + shift.x, shift.y) - shift.x, p.y, mod(p.z + shift.x, shift.y) - shift.x);
-//    return cylinder(pos, dim);
-//    return twistedBox(pos, dim.xy);
-//    return combine(cylinder(pos, dim), twistedBox(pos));
-    return cube(pos, 1);
-  }
-  else{
-    return cube(p, 1);
-  }
-//  return combine(cylinder(pos, dim), twistedBox(pos));
-}
-
 float shapes(vec3 p){
   vec3 torus1;
 
   float t = PI/2;
   mat4 R = mat4(
-  vec4(1, 0, 0, 0),
-  vec4(0, cos(t), -sin(t), 0),
-  vec4(0, sin(t), cos(t), 0),
-  vec4(0, 0, 0, 1));
+    vec4(1, 0, 0, 0),
+    vec4(0, cos(t), -sin(t), 0),
+    vec4(0, sin(t), cos(t), 0),
+    vec4(0, 0, 0, 1));
 
   mat4 T2 = mat4(
-  vec4(1, 0, 0, 0),
-  vec4(0, 1, 0, 3),
-  vec4(0, 0, 1, 0),
-  vec4(0, 0, 0, 1));
-//  return repeatedTowers(p, vec3(1/10, 1/10, 5/100), vec2(15, 30));
-//  return combine(
-//  combine(torus(((vec4(p, 1)*inverse(T2)).xyz), vec2(3,1)),
-//  cube(p, 3)),
-//  cube(translate(p, vec3(0, -10+0.1, 0)), 10));
-//
-  return combine(combine(
-            combine(torus(((vec4(p, 1)*inverse(T2)).xyz), vec2(3,1)),
-                    cube(p, 3)),
-            cube(translate(p, vec3(0, -10+0.1, 0)), 10)),
-  repeatedTowers(p, vec3(0.1, 2, 10), vec2(2.5, 5)));
+    vec4(1, 0, 0, 0),
+    vec4(0, 1, 0, 3),
+    vec4(0, 0, 1, 0),
+    vec4(0, 0, 0, 1));
+
+  return torus(((vec4(p, 1)*inverse(T2)).xyz), vec2(3,1));
+
 }
 
 float fScene(vec3 p){
@@ -237,9 +201,9 @@ float shadow(vec3 pt, vec3 lightPos) {
 
 float shade(vec3 eye, vec3 pt, vec3 n) {
   float val = 0;
-
+  
   val += 0.1;  // Ambient
-
+  
   for (int i = 0; i < LIGHT_POS.length(); i++) {
 
     // diffuse
@@ -255,7 +219,6 @@ float shade(vec3 eye, vec3 pt, vec3 n) {
       val += diffuse + specular;
     }
     else{
-      //      val += 999999;
       val += (shadow(pt, LIGHT_POS[i]))*(diffuse + specular);
     }
   }
@@ -267,15 +230,6 @@ vec3 illuminate(vec3 camPos, vec3 rayDir, vec3 pt) {
   n = getNormal(pt);
   c = getColor(pt);
   return shade(camPos, pt, n) * c;
-}
-
-vec3 darken(vec3 pt){
-  float val = 0;
-  for (int i = 0; i < LIGHT_POS.length(); i++) {
-    val += shadow(pt, LIGHT_POS[i]);
-  }
-  vec3 c = getColor(pt);
-  return val * c;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

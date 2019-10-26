@@ -151,7 +151,7 @@ public class TickApp extends TickCanvas {
       GL20.glValidateProgram(program);
       GL20.glUseProgram(program);
       checkError();
-      System.out.println("Succesfully loaded '" + FRAGMENT_SHADER + "'");
+      System.out.println("Successfully loaded '" + FRAGMENT_SHADER + "'");
       return program;
     } catch (RuntimeException e) {
       if (e.getMessage() != null) {
